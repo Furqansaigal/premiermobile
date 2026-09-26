@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Explicitly allow AI answer-engine crawlers (GEO) — being blocked here would
+# prevent the site from ever being cited by AI assistants and AI search overviews.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://premiermobiletexas.com/sitemap.xml

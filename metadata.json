@@ -1,0 +1,6 @@
+{
+  "name": "Premier Mobile Auto Detail",
+  "description": "Concierge mobile auto detailing across San Antonio, New Braunfels, and Austin. Professional booking, instant quote calculator, before & after comparisons, and interactive service packages.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

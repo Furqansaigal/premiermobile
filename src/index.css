@@ -1,0 +1,394 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-surface);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100dvh;
+  overflow: clip;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+img,
+video {
+  display: block;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled),
+a {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* Keep section transitions seamless; cards retain their own borders and depth. */
+main section {
+  border-color: transparent;
+}
+
+@theme {
+  --font-serif: 'Playfair Display', Georgia, Cambria, serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+
+  /* Legacy aliases (kept so nothing that still references them breaks) */
+  --color-champagne: #d8c3a5;
+  --color-champagne-light: #ece3d2;
+  --color-champagne-dark: #b8a282;
+  --color-dark-card: #121215;
+  --color-dark-border: #232328;
+
+  /* ---- Theme tokens ----
+     Defaults below are DARK mode, matching the site's original look exactly.
+     The .light class (added by the theme toggle) overrides every one of these
+     with a light-mode equivalent further down. Because Tailwind utilities like
+     bg-surface / text-heading compile to `var(--color-surface)` etc., simply
+     re-declaring the variable under .light is enough to re-theme the whole site. */
+
+  --color-surface: #0a0a0c;        /* page background */
+  --color-surface-alt: #0a0a0c;    /* continuous page background */
+  --color-card: #121215;           /* elevated card background */
+  --color-input: #1a1a1f;          /* form input fill */
+
+  --color-border-subtle: #1e1e24;
+  --color-border: #232328;
+  --color-border-strong: #2d2d35;
+
+  --color-heading: #ffffff;
+  --color-text: #e5e5e5;
+  --color-text-secondary: #d4d4d4;
+  --color-text-muted: #a3a3a3;
+  --color-text-faint: #737373;
+
+  --color-accent: #d8c3a5;           /* solid button / highlight fill */
+  --color-accent-hover: #ece3d2;
+  --color-accent-contrast: #0a0a0c;  /* text/icon color placed ON a solid accent fill */
+  --color-accent-text: #d8c3a5;      /* accent used as standalone text/icon color on the page */
+  --color-accent-vivid: #d8c3a5;     /* accent for large/decorative elements (headline accents, big numbers) */
+}
+
+.light {
+  --color-surface: #f7f5f0;
+  --color-surface-alt: #f7f5f0;
+  --color-card: #fffefb;
+  --color-input: #fffefb;
+
+  --color-border-subtle: #f0eee5;
+  --color-border: #e6e1d6;
+  --color-border-strong: #c7c1b1;
+
+  --color-heading: #171716;
+  --color-text: #171716;
+  --color-text-secondary: #58564c;
+  --color-text-muted: #86826f;
+  --color-text-faint: #a39d8e;
+
+  --color-accent: #a77d3b;
+  --color-accent-hover: #80591e;
+  --color-accent-contrast: #ffffff;
+  --color-accent-text: #80591e;
+  --color-accent-vivid: #a9791f;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* Keep native form controls readable and consistent across both colour themes. */
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
+
+.light input,
+.light select,
+.light textarea {
+  color-scheme: light;
+}
+
+/* Custom subtle glow effects — soft in both themes since they use the accent color at low opacity */
+.bg-glow-radial {
+  background: radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 70%);
+}
+
+.bg-hero-glow {
+  background: radial-gradient(ellipse 80% 50% at 70% -20%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent);
+}
+.light .bg-hero-glow {
+  background: radial-gradient(ellipse 90% 65% at 50% -15%, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, color-mix(in srgb, var(--color-accent) 6%, transparent) 42%, transparent 75%);
+}
+
+/* Elevation: box-shadow is nearly invisible against the dark surfaces (kept exactly as-is,
+   so dark mode is untouched), but reads as proper soft "lift" once the page is light. */
+.shadow-elevated {
+  box-shadow: none;
+}
+.light .shadow-elevated {
+  box-shadow: 0 1px 2px rgba(23, 23, 22, 0.04), 0 10px 28px rgba(23, 23, 22, 0.08);
+}
+.light .shadow-elevated-lg {
+  box-shadow: 0 2px 4px rgba(23, 23, 22, 0.05), 0 16px 40px rgba(23, 23, 22, 0.10);
+}
+
+/* Trust highlights: duplicated content makes the slow, horizontal loop seamless. */
+.stats-marquee {
+  overflow: hidden;
+  padding-block: 1.2rem;
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+}
+
+.stats-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: stats-marquee 32s linear infinite;
+  will-change: transform;
+}
+
+.stats-marquee:hover .stats-marquee__track,
+.stats-marquee:focus-within .stats-marquee__track {
+  animation-play-state: paused;
+}
+
+.stats-marquee__set {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.stats-marquee__item {
+  display: flex;
+  min-width: clamp(10.5rem, 15vw, 13.5rem);
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding-inline: clamp(1.15rem, 2.25vw, 2.25rem);
+  text-align: center;
+  border-right: 1px solid var(--color-border);
+}
+
+.stats-marquee__number {
+  color: var(--color-accent-text);
+  font-family: var(--font-serif);
+  font-size: clamp(1.45rem, 2.45vw, 2.15rem);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stats-marquee__label {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@keyframes stats-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Customer reviews: a continuous, hover-pausable horizontal rail. */
+.review-marquee {
+  overflow: hidden;
+  padding-block: 0.5rem;
+  mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+}
+
+.review-marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 1.25rem;
+  animation: review-marquee 78s linear infinite;
+  will-change: transform;
+}
+
+.review-marquee:hover .review-marquee__track,
+.review-marquee:focus-within .review-marquee__track {
+  animation-play-state: paused;
+}
+
+.review-marquee__card {
+  width: 16rem;
+  height: 16rem;
+  flex: 0 0 auto;
+}
+
+@keyframes review-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.625rem));
+  }
+}
+
+.drop-shadow-logo {
+  filter: drop-shadow(0 2px 12px rgba(255, 255, 255, 0.12));
+}
+.light .drop-shadow-logo {
+  filter: drop-shadow(0 2px 8px rgba(23, 23, 22, 0.10));
+}
+
+/* One warm, bolder signature moment for light mode's closing section — dark mode keeps its
+   existing near-black anchor treatment via --color-surface-alt, completely unchanged. */
+.final-cta-surface {
+  background: var(--color-surface-alt);
+}
+.light .final-cta-surface {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 16%, var(--color-surface)) 0%, var(--color-surface) 70%);
+}
+
+.footer-surface {
+  background: color-mix(in srgb, var(--color-accent) 5%, var(--color-surface));
+}
+
+.light .footer-surface {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+}
+
+/* Faint paper grain, light mode only — adds a touch of tactile depth instead of a flat fill */
+.light body {
+  position: relative;
+}
+.light body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+@media (max-width: 639px) {
+  section[id] {
+    scroll-margin-top: 4.5rem;
+  }
+
+  .review-marquee__track {
+    gap: 0.875rem;
+    animation-duration: 62s;
+  }
+
+  .review-marquee__card {
+    width: min(16rem, calc(100vw - 2.5rem));
+    height: min(16rem, calc(100vw - 2.5rem));
+  }
+
+  .stats-marquee {
+    padding-block: 1rem;
+  }
+
+  .stats-marquee__item {
+    min-width: 10rem;
+    padding-inline: 1.1rem;
+  }
+
+  /* Prevent iOS Safari from zooming the page when a customer taps a form field. */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .review-marquee__track {
+    animation: none;
+    width: auto;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .stats-marquee {
+    overflow-x: auto;
+    mask-image: none;
+    scrollbar-width: none;
+  }
+
+  .stats-marquee::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stats-marquee__track {
+    animation: none;
+  }
+
+  .stats-marquee__set[aria-hidden='true'] {
+    display: none;
+  }
+}
