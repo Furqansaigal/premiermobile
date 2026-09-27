@@ -15,6 +15,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenBooking }) => {
     <section className="py-8 sm:py-10 lg:py-10 final-cta-surface border-t border-border-subtle relative overflow-hidden text-center">
       <LazyVideo
         background
+        showPlaybackControl={false}
         poster={heroPoster}
         src={heroVideo}
         className="absolute inset-0 h-full w-full object-cover opacity-30 pointer-events-none"

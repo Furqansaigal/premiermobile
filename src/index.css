@@ -76,8 +76,8 @@ main section {
      bg-surface / text-heading compile to `var(--color-surface)` etc., simply
      re-declaring the variable under .light is enough to re-theme the whole site. */
 
-  --color-surface: #0a0a0c;        /* page background */
-  --color-surface-alt: #0a0a0c;    /* continuous page background */
+  --color-surface: #0a0a0c;        /* soft charcoal, matching the live website */
+  --color-surface-alt: #0d0d10;
   --color-card: #121215;           /* elevated card background */
   --color-input: #1a1a1f;          /* form input fill */
 
@@ -100,7 +100,7 @@ main section {
 
 .light {
   --color-surface: #f7f5f0;
-  --color-surface-alt: #f7f5f0;
+  --color-surface-alt: #efece3;
   --color-card: #fffefb;
   --color-input: #fffefb;
 
@@ -119,6 +119,55 @@ main section {
   --color-accent-contrast: #ffffff;
   --color-accent-text: #80591e;
   --color-accent-vivid: #a9791f;
+}
+
+/* Route-local surface tokens leave cards, forms and brand accents intact. */
+.page-shell { min-height: 100dvh; background: var(--color-surface); }
+.page-shell[data-page-tone='card'] { --color-surface: #0d0d10; --color-surface-alt: #0d0d10; }
+.page-shell[data-page-tone='other'] { --color-surface: #111114; --color-surface-alt: #111114; }
+.light .page-shell[data-page-tone='card'] { --color-surface: #efece3; --color-surface-alt: #efece3; }
+.light .page-shell[data-page-tone='other'] { --color-surface: #f3f0e9; --color-surface-alt: #f3f0e9; }
+
+/* Only the narrow reflection is blurred, never the video/page behind it. */
+.page-shine {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.page-shine__reflection {
+  position: absolute;
+  top: -15%;
+  left: -55%;
+  width: 45%;
+  height: 130%;
+  background: linear-gradient(100deg, transparent 10%, rgba(255,255,255,.025) 32%, rgba(255,255,255,.10) 48%, rgba(255,255,255,.035) 58%, transparent 85%);
+  filter: blur(10px);
+  opacity: 0;
+  animation: page-mirror-sweep 650ms cubic-bezier(.22,.61,.36,1) both;
+}
+.light .page-shine__reflection {
+  background: linear-gradient(100deg, transparent 10%, rgba(100,116,139,.055) 32%, rgba(255,255,255,.45) 48%, rgba(100,116,139,.065) 58%, transparent 85%);
+}
+.page-content--entering {
+  /* No transform: fixed headers, dialogs and mobile CTAs keep their viewport anchor. */
+  animation: page-content-arrive 220ms ease-out 650ms backwards;
+}
+@keyframes page-mirror-sweep {
+  0% { transform: translateX(0) skewX(-12deg); opacity: 0; }
+  18% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(370%) skewX(-12deg); opacity: 0; }
+}
+@keyframes page-content-arrive {
+  from { opacity: .94; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-shine { display: none; }
+  .page-content--entering { animation: none !important; }
 }
 
 .font-serif {

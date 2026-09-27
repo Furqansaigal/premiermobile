@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import {
   Calendar,
   Sparkles,
@@ -107,7 +108,6 @@ export default function App() {
 
   const handleVisitWebsite = () => {
     trackAction('tapped_visit_full_website');
-    window.open(BRAND_CONFIG.websiteUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Main Card Content Component - Mobile-First single-column layout
@@ -324,14 +324,15 @@ export default function App() {
 
       {/* 8. "Visit Full Website" text link at the bottom, styled less prominently than the buttons above */}
       <div className="mt-2 pt-2 border-t border-border text-center space-y-2">
-        <button
+        <Link
+          to="/"
           id="visit-full-website-link"
           onClick={handleVisitWebsite}
           className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-accent-text underline underline-offset-4 transition-colors cursor-pointer"
         >
           <span>Visit Full Website</span>
           <ExternalLink className="w-3.5 h-3.5" />
-        </button>
+        </Link>
 
         <footer className="text-[10px] text-text-faint space-y-0.5">
           <p className="font-mono">premiermobiletexas.com/card</p>

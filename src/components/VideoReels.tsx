@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { LazyVideo } from './LazyVideo';
 import { ArrowLeft, ArrowRight, Calendar, MapPin, Sparkles, Volume2, VolumeX } from 'lucide-react';
 
-import showcase1 from '../assets/videos/showcase-1.mp4';
-import showcase2 from '../assets/videos/showcase-2.mp4';
-import showcase3 from '../assets/videos/showcase-3.mp4';
-import showcase4 from '../assets/videos/showcase-4.mp4';
-import showcase5 from '../assets/videos/showcase-5.mp4';
-import showcase6 from '../assets/videos/showcase-6.mp4';
-import showcase7 from '../assets/videos/showcase-7.mp4';
+import showcase1 from '../assets/videos/optimized/showcase-1-desktop.mp4';
+import showcase2 from '../assets/videos/optimized/showcase-2-desktop.mp4';
+import showcase3 from '../assets/videos/optimized/showcase-3-desktop.mp4';
+import showcase4 from '../assets/videos/optimized/showcase-4-desktop.mp4';
+import showcase5 from '../assets/videos/optimized/showcase-5-desktop.mp4';
+import showcase6 from '../assets/videos/optimized/showcase-6-desktop.mp4';
+import showcase7 from '../assets/videos/optimized/showcase-7-desktop.mp4';
 import mobile1 from '../assets/videos/optimized/showcase-1-mobile.mp4';
 import mobile2 from '../assets/videos/optimized/showcase-2-mobile.mp4';
 import mobile3 from '../assets/videos/optimized/showcase-3-mobile.mp4';
@@ -53,6 +53,12 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
   const [activeIndex, setActiveIndex] = useState(4);
   const [isMuted, setIsMuted] = useState(true);
 
+  const navigate = (direction: -1 | 1) => {
+    // A newly mounted video must start muted for reliable mobile autoplay.
+    setIsMuted(true);
+    setActiveIndex((index) => (index + direction + SHOWCASE_VIDEOS.length) % SHOWCASE_VIDEOS.length);
+  };
+
   const previousIndex = (activeIndex - 1 + SHOWCASE_VIDEOS.length) % SHOWCASE_VIDEOS.length;
   const nextIndex = (activeIndex + 1) % SHOWCASE_VIDEOS.length;
   const activeVideo = SHOWCASE_VIDEOS[activeIndex];
@@ -79,29 +85,28 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
           <div className="grid grid-cols-1 items-center gap-4 sm:gap-6 lg:grid-cols-3">
             <button
               type="button"
-              onClick={() => setActiveIndex(previousIndex)}
+              onClick={() => navigate(-1)}
               className="group hidden aspect-[4/5] overflow-hidden rounded-xs border border-border bg-card text-left shadow-elevated transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-accent/60 lg:block"
               aria-label={`Show previous video: ${previousVideo.title}`}
             >
               <div className="relative h-full w-full overflow-hidden bg-black">
-                <img src={previousVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
+                <img key={previousVideo.id} src={previousVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 bg-black/25" />
                 <span className="absolute bottom-4 left-4 font-sans text-[10px] font-semibold uppercase tracking-widest text-white/90">Previous</span>
               </div>
             </button>
 
             <div className="relative mx-auto w-full max-w-md min-w-0 lg:max-w-none">
-              <AnimatePresence mode="wait">
+              {/* Replace all three selections in the same render; never retain an outgoing center clip. */}
                 <motion.div
                   key={activeVideo.id}
-                  initial={{ opacity: 0, scale: 0.99 }}
+                  initial={{ opacity: 0.85, scale: 0.99 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.01 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
                   className="aspect-[4/5] overflow-hidden rounded-xs border border-accent/50 bg-card shadow-elevated-lg"
                 >
                   <div className="relative h-full w-full overflow-hidden bg-black">
-                    <LazyVideo key={activeVideo.id} src={activeVideo.videoUrl} mobileSrc={activeVideo.mobileUrl} poster={activeVideo.poster} muted={isMuted} label={activeVideo.title} className="h-full w-full object-cover" />
+                    <LazyVideo key={activeVideo.id} src={activeVideo.videoUrl} mobileSrc={activeVideo.mobileUrl} poster={activeVideo.poster} muted={isMuted} label={activeVideo.title} showPlaybackControl={false} preloadWhenNear="auto" className="h-full w-full object-cover" />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35" />
 
                     <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
@@ -125,24 +130,23 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
                     </div>
                   </div>
                 </motion.div>
-              </AnimatePresence>
 
-              <button type="button" onClick={() => setActiveIndex(previousIndex)} className="absolute left-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/70 text-white backdrop-blur-md transition-colors hover:bg-accent hover:text-accent-contrast sm:h-11 sm:w-11 lg:-left-5" aria-label="Show previous video">
+              <button type="button" onClick={() => navigate(-1)} className="absolute left-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/70 text-white backdrop-blur-md transition-colors hover:bg-accent hover:text-accent-contrast sm:h-11 sm:w-11 lg:-left-5" aria-label="Show previous video">
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <button type="button" onClick={() => setActiveIndex(nextIndex)} className="absolute right-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/70 text-white backdrop-blur-md transition-colors hover:bg-accent hover:text-accent-contrast sm:h-11 sm:w-11 lg:-right-5" aria-label="Show next video">
+              <button type="button" onClick={() => navigate(1)} className="absolute right-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/70 text-white backdrop-blur-md transition-colors hover:bg-accent hover:text-accent-contrast sm:h-11 sm:w-11 lg:-right-5" aria-label="Show next video">
                 <ArrowRight className="h-5 w-5" />
               </button>
             </div>
 
             <button
               type="button"
-              onClick={() => setActiveIndex(nextIndex)}
+              onClick={() => navigate(1)}
               className="group hidden aspect-[4/5] overflow-hidden rounded-xs border border-border bg-card text-left shadow-elevated transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-accent/60 lg:block"
               aria-label={`Show next video: ${nextVideo.title}`}
             >
               <div className="relative h-full w-full overflow-hidden bg-black">
-                <img src={nextVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
+                <img key={nextVideo.id} src={nextVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 bg-black/25" />
                 <span className="absolute bottom-4 right-4 font-sans text-[10px] font-semibold uppercase tracking-widest text-white/90">Next</span>
               </div>

@@ -24,6 +24,7 @@ const bundled = await build({
   stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
     import React from 'react';
     import { renderToString } from 'react-dom/server.browser';
+    import { MemoryRouter } from 'react-router-dom';
     import App from './src/App';
     import Card from './src/card/CardApp';
     import { ThemeProvider } from './src/context/ThemeContext';
@@ -35,7 +36,7 @@ const bundled = await build({
     import { SaveContactModal } from './src/card/components/SaveContactModal';
     const noop = () => {};
     export const pages = Object.fromEntries(Object.entries({App, Card, BookingModal, BookNowModal, ServiceModal, ReviewsModal, ContactActionSheet, SaveContactModal}).map(([name, Component]) => [name,
-      renderToString(<ThemeProvider><Component isOpen={true} onClose={noop} onSelectBookService={noop} /></ThemeProvider>)]));
+      renderToString(<MemoryRouter><ThemeProvider><Component isOpen={true} onClose={noop} onSelectBookService={noop} /></ThemeProvider></MemoryRouter>)]));
   ` },
   bundle: true, write: false, format: 'esm', platform: 'browser',
   define: { 'process.env.NODE_ENV': '"production"', 'import.meta.env': '{}' },

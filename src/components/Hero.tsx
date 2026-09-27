@@ -52,6 +52,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking }) => {
       {/* Video Background */}
       <LazyVideo
         background
+        showPlaybackControl={false}
         priority
         poster={heroPoster}
         src={heroVideo}
