@@ -3,6 +3,8 @@ import { Phone, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Logo } from './Logo';
 import heroVideo from '../assets/videos/6159374-hd_1920_1080_30fps.mp4';
+import heroPoster from '../assets/videos/optimized/hero-poster.jpg';
+import { LazyVideo } from './LazyVideo';
 
 interface FinalCTAProps {
   onOpenBooking: () => void;
@@ -11,14 +13,10 @@ interface FinalCTAProps {
 export const FinalCTA: React.FC<FinalCTAProps> = ({ onOpenBooking }) => {
   return (
     <section className="py-8 sm:py-10 lg:py-10 final-cta-surface border-t border-border-subtle relative overflow-hidden text-center">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
+      <LazyVideo
+        background
+        poster={heroPoster}
         src={heroVideo}
-        aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover opacity-30 pointer-events-none"
       />
       <div className="absolute inset-0 bg-surface/80 pointer-events-none"></div>

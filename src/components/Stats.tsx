@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useInView } from 'motion/react';
 
 const TRUST_STATS = [
   { number: '5.0 ★', label: 'Google Profile Rating' },
@@ -22,9 +23,11 @@ const StatSet: React.FC<{ hidden?: boolean }> = ({ hidden = false }) => (
 );
 
 export const Stats: React.FC = () => {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref);
   return (
-    <section className="stats-marquee bg-surface-alt border-y border-border-subtle" aria-label="Premier Mobile trust highlights">
-      <div className="stats-marquee__track">
+    <section ref={ref} tabIndex={0} className="stats-marquee bg-surface-alt border-y border-border-subtle" aria-label="Premier Mobile trust highlights">
+      <div className="stats-marquee__track" style={{ animationPlayState: inView ? undefined : 'paused' }}>
         <StatSet />
         <StatSet hidden />
       </div>

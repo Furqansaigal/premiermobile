@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
+import { LazyVideo } from './LazyVideo';
 import { ArrowLeft, ArrowRight, Calendar, MapPin, Sparkles, Volume2, VolumeX } from 'lucide-react';
 
 import showcase1 from '../assets/videos/showcase-1.mp4';
@@ -9,6 +10,20 @@ import showcase4 from '../assets/videos/showcase-4.mp4';
 import showcase5 from '../assets/videos/showcase-5.mp4';
 import showcase6 from '../assets/videos/showcase-6.mp4';
 import showcase7 from '../assets/videos/showcase-7.mp4';
+import mobile1 from '../assets/videos/optimized/showcase-1-mobile.mp4';
+import mobile2 from '../assets/videos/optimized/showcase-2-mobile.mp4';
+import mobile3 from '../assets/videos/optimized/showcase-3-mobile.mp4';
+import mobile4 from '../assets/videos/optimized/showcase-4-mobile.mp4';
+import mobile5 from '../assets/videos/optimized/showcase-5-mobile.mp4';
+import mobile6 from '../assets/videos/optimized/showcase-6-mobile.mp4';
+import mobile7 from '../assets/videos/optimized/showcase-7-mobile.mp4';
+import poster1 from '../assets/videos/optimized/showcase-1-poster.jpg';
+import poster2 from '../assets/videos/optimized/showcase-2-poster.jpg';
+import poster3 from '../assets/videos/optimized/showcase-3-poster.jpg';
+import poster4 from '../assets/videos/optimized/showcase-4-poster.jpg';
+import poster5 from '../assets/videos/optimized/showcase-5-poster.jpg';
+import poster6 from '../assets/videos/optimized/showcase-6-poster.jpg';
+import poster7 from '../assets/videos/optimized/showcase-7-poster.jpg';
 
 interface VideoReelProps {
   onOpenBooking: (packageId?: string) => void;
@@ -19,16 +34,18 @@ interface ShowcaseVideo {
   title: string;
   badge: string;
   videoUrl: string;
+  mobileUrl: string;
+  poster: string;
 }
 
 const SHOWCASE_VIDEOS: ShowcaseVideo[] = [
-  { id: 'showcase-1', title: 'Premium Mobile Detail', badge: 'ON-SITE PROCESS', videoUrl: showcase1 },
-  { id: 'showcase-2', title: 'Interior Refresh', badge: 'INTERIOR CARE', videoUrl: showcase2 },
-  { id: 'showcase-3', title: 'Precision Exterior Care', badge: 'DETAIL IN MOTION', videoUrl: showcase3 },
-  { id: 'showcase-4', title: 'Showroom-Ready Finish', badge: 'FINAL RESULT', videoUrl: showcase4 },
-  { id: 'showcase-5', title: 'Mobile Detail Service', badge: 'ON-SITE SERVICE', videoUrl: showcase5 },
-  { id: 'showcase-6', title: 'Care in Every Detail', badge: 'PREMIUM CARE', videoUrl: showcase6 },
-  { id: 'showcase-7', title: 'Fresh, Clean Finish', badge: 'DETAILING RESULTS', videoUrl: showcase7 },
+  { id: 'showcase-1', title: 'Premium Mobile Detail', badge: 'ON-SITE PROCESS', videoUrl: showcase1, mobileUrl: mobile1, poster: poster1 },
+  { id: 'showcase-2', title: 'Interior Refresh', badge: 'INTERIOR CARE', videoUrl: showcase2, mobileUrl: mobile2, poster: poster2 },
+  { id: 'showcase-3', title: 'Precision Exterior Care', badge: 'DETAIL IN MOTION', videoUrl: showcase3, mobileUrl: mobile3, poster: poster3 },
+  { id: 'showcase-4', title: 'Showroom-Ready Finish', badge: 'FINAL RESULT', videoUrl: showcase4, mobileUrl: mobile4, poster: poster4 },
+  { id: 'showcase-5', title: 'Mobile Detail Service', badge: 'ON-SITE SERVICE', videoUrl: showcase5, mobileUrl: mobile5, poster: poster5 },
+  { id: 'showcase-6', title: 'Care in Every Detail', badge: 'PREMIUM CARE', videoUrl: showcase6, mobileUrl: mobile6, poster: poster6 },
+  { id: 'showcase-7', title: 'Fresh, Clean Finish', badge: 'DETAILING RESULTS', videoUrl: showcase7, mobileUrl: mobile7, poster: poster7 },
 ];
 
 export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
@@ -67,7 +84,7 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
               aria-label={`Show previous video: ${previousVideo.title}`}
             >
               <div className="relative h-full w-full overflow-hidden bg-black">
-                <video src={previousVideo.videoUrl} muted playsInline preload="metadata" className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
+                <img src={previousVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 bg-black/25" />
                 <span className="absolute bottom-4 left-4 font-sans text-[10px] font-semibold uppercase tracking-widest text-white/90">Previous</span>
               </div>
@@ -84,7 +101,7 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
                   className="aspect-[4/5] overflow-hidden rounded-xs border border-accent/50 bg-card shadow-elevated-lg"
                 >
                   <div className="relative h-full w-full overflow-hidden bg-black">
-                    <video key={activeVideo.id} src={activeVideo.videoUrl} autoPlay loop muted={isMuted} playsInline preload="metadata" className="h-full w-full object-cover" />
+                    <LazyVideo key={activeVideo.id} src={activeVideo.videoUrl} mobileSrc={activeVideo.mobileUrl} poster={activeVideo.poster} muted={isMuted} label={activeVideo.title} className="h-full w-full object-cover" />
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35" />
 
                     <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
@@ -125,7 +142,7 @@ export const VideoReels: React.FC<VideoReelProps> = ({ onOpenBooking }) => {
               aria-label={`Show next video: ${nextVideo.title}`}
             >
               <div className="relative h-full w-full overflow-hidden bg-black">
-                <video src={nextVideo.videoUrl} muted playsInline preload="metadata" className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
+                <img src={nextVideo.poster} alt="" loading="lazy" decoding="async" width={720} height={1280} className="h-full w-full object-cover opacity-55 transition-opacity duration-300 group-hover:opacity-75" />
                 <div className="absolute inset-0 bg-black/25" />
                 <span className="absolute bottom-4 right-4 font-sans text-[10px] font-semibold uppercase tracking-widest text-white/90">Next</span>
               </div>

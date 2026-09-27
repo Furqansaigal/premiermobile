@@ -1,3 +1,4 @@
+import { useDialog } from '../../hooks/useDialog';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, UserPlus, Share2, Copy, Check, QrCode, Download, ExternalLink } from 'lucide-react';
@@ -15,7 +16,9 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
   onTrackAction,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState('');
 
+  const dialogRef = useDialog(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleDownloadVCard = () => {
@@ -29,7 +32,7 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleShareLink = async () => {
@@ -44,11 +47,18 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
         if (onTrackAction) onTrackAction('shared_via_native_share');
         return;
       } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         // Fallback to copy
       }
     }
 
-    navigator.clipboard.writeText(cardUrl);
+    try {
+      await navigator.clipboard.writeText(cardUrl);
+      setCopyError('');
+    } catch {
+      setCopyError(`Copy this link: ${cardUrl}`);
+      return;
+    }
     setCopied(true);
     if (onTrackAction) onTrackAction('copied_page_link');
     setTimeout(() => setCopied(false), 2000);
@@ -56,7 +66,7 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -68,11 +78,16 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
 
         {/* Modal Container */}
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Save digital business card"
+          tabIndex={-1}
           initial={{ y: '100%', opacity: 0.5 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          className="relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10"
+          className="max-h-[92dvh] overflow-y-auto overscroll-contain relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
@@ -95,6 +110,7 @@ export const SaveContactModal: React.FC<SaveContactModalProps> = ({
           </div>
 
           <div className="space-y-3">
+            {copyError && <p role="status" className="text-xs text-text-secondary">{copyError}</p>}
             {/* Primary VCF Download */}
             <button
               onClick={handleDownloadVCard}

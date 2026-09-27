@@ -1,3 +1,4 @@
+import { useDialog } from '../../hooks/useDialog';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Phone, MessageSquare, Copy, Check, Clock, MapPin, Send } from 'lucide-react';
@@ -16,9 +17,16 @@ export const ContactActionSheet: React.FC<ContactActionSheetProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [customMsg, setCustomMsg] = useState('');
+  const [copyError, setCopyError] = useState('');
 
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText(BRAND_CONFIG.phoneDisplay);
+  const handleCopyPhone = async () => {
+    try {
+      await navigator.clipboard.writeText(BRAND_CONFIG.phoneDisplay);
+      setCopyError('');
+    } catch {
+      setCopyError(`Please copy this number: ${BRAND_CONFIG.phoneDisplay}`);
+      return;
+    }
     setCopied(true);
     if (onTrackAction) onTrackAction('copied_phone_number');
     setTimeout(() => setCopied(false), 2000);
@@ -35,11 +43,12 @@ export const ContactActionSheet: React.FC<ContactActionSheetProps> = ({
     window.location.href = `sms:${BRAND_CONFIG.phoneRaw}?&body=${encodeURIComponent(msg)}`;
   };
 
+  const dialogRef = useDialog(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -51,11 +60,16 @@ export const ContactActionSheet: React.FC<ContactActionSheetProps> = ({
 
         {/* Action Sheet Card */}
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Call or text Premier Mobile"
+          tabIndex={-1}
           initial={{ y: '100%', opacity: 0.5 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          className="relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10"
+          className="max-h-[92dvh] overflow-y-auto overscroll-contain relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
@@ -118,16 +132,17 @@ export const ContactActionSheet: React.FC<ContactActionSheetProps> = ({
 
             {/* Quick SMS composer box */}
             <div className="p-3.5 rounded-2xl bg-input/60 border border-border space-y-2">
-              <label className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
+              <label htmlFor="quick-text-message" className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
                 Quick Text Message:
               </label>
               <div className="flex gap-2">
                 <input
+                  id="quick-text-message"
                   type="text"
                   placeholder="e.g. Need detail for truck in San Antonio..."
                   value={customMsg}
                   onChange={(e) => setCustomMsg(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-input border border-border-strong rounded-xl text-xs text-heading placeholder-text-faint focus:outline-none focus:border-accent"
+                  className="min-w-0 flex-1 px-3 py-2 bg-input border border-border-strong rounded-xl text-xs text-heading placeholder-text-faint focus:outline-none focus:border-accent"
                 />
                 <button
                   type="button"
@@ -158,6 +173,7 @@ export const ContactActionSheet: React.FC<ContactActionSheetProps> = ({
               )}
             </button>
 
+            {copyError && <p role="status" className="text-xs text-text-secondary">{copyError}</p>}
             {/* Operating info */}
             <div className="pt-3 border-t border-border flex items-center justify-between text-[11px] text-text-muted px-1">
               <span className="flex items-center gap-1">

@@ -30,14 +30,16 @@ export async function sendWeb3FormsNotification(data: Web3FormsPayload): Promise
   }
 
   if (validKeys.length === 0) {
-    console.log('[Web3Forms] Demo mode active - form data received:', data);
-    return true;
+    return false;
   }
 
   const sendSingle = async (item: { label: string; key: string }) => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -51,8 +53,7 @@ export async function sendWeb3FormsNotification(data: Web3FormsPayload): Promise
       });
 
       const result = await response.json();
-      if (result.success) {
-        console.log(`[Web3Forms] Successfully sent notification via ${item.label}`);
+      if (response.ok && result.success === true) {
         return true;
       } else {
         console.error(`[Web3Forms] Failed to send via ${item.label}:`, result.message || result);
@@ -61,11 +62,14 @@ export async function sendWeb3FormsNotification(data: Web3FormsPayload): Promise
     } catch (error) {
       console.error(`[Web3Forms] Error sending via ${item.label}:`, error);
       return false;
+    } finally {
+      window.clearTimeout(timeout);
     }
   };
 
   // Dispatch all POST requests concurrently
-  const results = await Promise.allSettled(validKeys.map(item => sendSingle(item)));
+  const uniqueKeys = validKeys.filter((item, index) => validKeys.findIndex((other) => other.key === item.key) === index);
+  const results = await Promise.allSettled(uniqueKeys.map(item => sendSingle(item)));
 
   // Check if at least one request succeeded
   const atLeastOneSuccess = results.some(

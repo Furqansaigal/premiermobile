@@ -1,3 +1,4 @@
+import { useDialog } from '../../hooks/useDialog';
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Star, ShieldCheck, ExternalLink, ThumbsUp, MapPin } from 'lucide-react';
@@ -14,6 +15,7 @@ export const ReviewsModal: React.FC<ReviewsModalProps> = ({
   onClose,
   onTrackAction,
 }) => {
+  const dialogRef = useDialog(isOpen, onClose);
   if (!isOpen) return null;
 
   const handleOpenGoogle = () => {
@@ -23,7 +25,7 @@ export const ReviewsModal: React.FC<ReviewsModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -35,11 +37,16 @@ export const ReviewsModal: React.FC<ReviewsModalProps> = ({
 
         {/* Modal Container */}
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Customer reviews"
+          tabIndex={-1}
           initial={{ y: '100%', opacity: 0.5 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          className="relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[88vh] flex flex-col"
+          className="relative w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[88dvh] flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4 mb-4">

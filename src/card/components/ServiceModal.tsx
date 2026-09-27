@@ -1,3 +1,4 @@
+import { useDialog } from '../../hooks/useDialog';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, ArrowRight, Sparkles, Clock, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
@@ -18,11 +19,12 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
   const [selectedVehicleType, setSelectedVehicleType] = useState<'sedan' | 'midSuv' | 'truckThirdRow' | 'exotic'>('midSuv');
   const [expandedServiceId, setExpandedServiceId] = useState<string>('full-detail');
 
+  const dialogRef = useDialog(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -34,11 +36,16 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
 
         {/* Modal Container */}
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Services and pricing"
+          tabIndex={-1}
           initial={{ y: '100%', opacity: 0.5 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          className="relative w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[90dvh] flex flex-col"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4 mb-3">
@@ -73,6 +80,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                 <button
                   key={v.id}
                   onClick={() => setSelectedVehicleType(v.id as any)}
+                  aria-pressed={selectedVehicleType === v.id}
                   className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     selectedVehicleType === v.id
                       ? 'bg-accent text-accent-contrast font-bold shadow-md shadow-accent/20'
@@ -102,6 +110,16 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                 >
                   {/* Card Header */}
                   <div
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    aria-controls={`service-details-${service.id}`}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setExpandedServiceId(isExpanded ? '' : service.id);
+                      }
+                    }}
                     onClick={() => setExpandedServiceId(isExpanded ? '' : service.id)}
                     className="p-4 cursor-pointer flex items-start justify-between gap-3"
                   >
@@ -132,6 +150,7 @@ export const ServiceModal: React.FC<ServiceModalProps> = ({
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div
+                        id={`service-details-${service.id}`}
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}

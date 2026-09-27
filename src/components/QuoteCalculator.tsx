@@ -25,7 +25,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
     sedan: packageChoice === 'refresh' ? 0 : 0,
     suv: packageChoice === 'refresh' ? 10 : 30,
     truck: packageChoice === 'refresh' ? 20 : 40,
-    exotic: 50,
+    exotic: packageChoice === 'refresh' ? 51 : 50,
   };
 
   // Condition surcharges
@@ -117,6 +117,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
                     key={item.id}
                     type="button"
                     onClick={() => setVehicleType(item.id as any)}
+                    aria-pressed={vehicleType === item.id}
                     className={`p-3 text-left border rounded-xs transition-all cursor-pointer ${
                       vehicleType === item.id
                         ? 'border-accent bg-accent/10 text-heading'
@@ -145,6 +146,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
                     key={item.id}
                     type="button"
                     onClick={() => setPackageChoice(item.id as any)}
+                    aria-pressed={packageChoice === item.id}
                     className={`p-4 text-left border rounded-xs transition-all cursor-pointer relative ${
                       packageChoice === item.id
                         ? 'border-accent bg-accent/10 text-heading shadow-md'
@@ -179,6 +181,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
                     key={item.id}
                     type="button"
                     onClick={() => setCondition(item.id as any)}
+                    aria-pressed={condition === item.id}
                     className={`p-3 text-left border rounded-xs transition-all cursor-pointer ${
                       condition === item.id
                         ? 'border-accent bg-accent/10 text-heading'
@@ -210,6 +213,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
                       key={item.id}
                       type="button"
                       onClick={() => toggleAddOn(item.id)}
+                      aria-pressed={isChecked}
                       className={`p-3 text-left border rounded-xs transition-all cursor-pointer flex items-center justify-between ${
                         isChecked
                           ? 'border-accent bg-accent/15 text-heading'
@@ -228,7 +232,7 @@ export const QuoteCalculator: React.FC<QuoteCalculatorProps> = ({ onQuoteCalcula
 
           {/* Quote Summary Box Right Column */}
           <div className="xl:col-span-5 bg-card border-2 border-accent/50 p-5 sm:p-8 rounded-xs text-left space-y-6 shadow-2xl shadow-elevated-lg relative xl:sticky xl:top-28">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4" aria-live="polite" aria-atomic="true">
               <div>
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent-text font-bold block">
                   YOUR ESTIMATED TOTAL

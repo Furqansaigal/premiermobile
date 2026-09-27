@@ -65,10 +65,12 @@ export default function App() {
     setEvents([initialEvent]);
     trackGAEvent('qr_scan_landed', { utm_source: utmSource });
 
-    const storedScans = localStorage.getItem('pm_qr_scans');
-    const newCount = storedScans ? parseInt(storedScans, 10) + 1 : 1;
-    localStorage.setItem('pm_qr_scans', newCount.toString());
-    setScanCount(newCount);
+    try {
+      const storedScans = localStorage.getItem('pm_qr_scans');
+      const newCount = (Number(storedScans) || 0) + 1;
+      localStorage.setItem('pm_qr_scans', newCount.toString());
+      setScanCount(newCount);
+    } catch { /* The card remains usable when browser storage is blocked. */ }
   }, []);
 
   const trackAction = (actionName: string, extra: Record<string, any> = {}) => {
@@ -342,7 +344,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface flex flex-col items-center">
       {/* Desktop Responsive Bar / Device Mode Controller */}
-      <div className="hidden lg:flex w-full items-center justify-between px-6 py-3 bg-surface-alt border-b border-border text-xs text-text-secondary">
+      {import.meta.env.DEV && <div className="hidden lg:flex w-full items-center justify-between px-6 py-3 bg-surface-alt border-b border-border text-xs text-text-secondary">
         <div className="flex items-center gap-3">
           <span className="font-bold text-accent-text tracking-wider uppercase font-serif">
             Premier Mobile QR Hub
@@ -384,6 +386,7 @@ export default function App() {
         </div>
       </div>
 
+      }
       {/* Main Presentation Area */}
       <main className="w-full flex-1 flex flex-col items-center justify-center p-0 lg:p-6">
         {viewMode === 'mobile-frame' ? (

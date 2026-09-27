@@ -28,7 +28,7 @@ export const BRAND_CONFIG = {
       handle: '@premiermobile.tx',
     },
   },
-  operatingHours: 'Mon - Sun: 7:00 AM - 7:00 PM',
+  operatingHours: 'Mon - Sun: 7:00 AM - 8:00 PM',
   statusBadge: 'Accepting Appointments',
 };
 

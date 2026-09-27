@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Phone, Star, ShieldCheck, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BookingFormData } from '../types';
 import { sendWeb3FormsNotification } from '../lib/web3forms';
 import { useTheme } from '../context/ThemeContext';
 import heroVideo from '../assets/videos/6159374-hd_1920_1080_30fps.mp4';
+import heroPoster from '../assets/videos/optimized/hero-poster.jpg';
+import { LazyVideo } from './LazyVideo';
 
 interface HeroProps {
-  onFormSubmit: (data: BookingFormData) => void;
   onOpenBooking: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenBooking }) => {
   const { theme } = useTheme();
   const [formData, setFormData] = useState<BookingFormData>({
     name: '',
@@ -23,31 +24,36 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const submitting = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
-      alert('Please enter your name and phone number to submit your request.');
+    if (submitting.current) return;
+    if (!formData.name.trim() || formData.phone.replace(/\D/g, '').length < 7) {
+      setSubmitError('Please enter your name and a valid phone number.');
       return;
     }
+    submitting.current = true;
     setIsSubmitting(true);
-    await sendWeb3FormsNotification(formData);
+    setSubmitError('');
+    const didSend = await sendWeb3FormsNotification({ ...formData, packageId: formData.serviceId, vehicleMakeModel: formData.vehicleYearMakeModel });
+    submitting.current = false;
     setIsSubmitting(false);
+    if (!didSend) {
+      setSubmitError('We could not send your request. Please try again or call (210) 580-6738.');
+      return;
+    }
     setSubmitted(true);
-    onFormSubmit(formData);
-    setTimeout(() => {
-      setSubmitted(false);
-    }, 4000);
   };
 
   return (
     <section className="relative min-h-[calc(100svh-4rem)] py-16 sm:py-20 lg:py-24 overflow-hidden bg-hero-glow flex items-center">
       {/* Video Background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      <LazyVideo
+        background
+        priority
+        poster={heroPoster}
         src={heroVideo}
         className={
           theme === 'light'
@@ -77,9 +83,9 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-serif text-[clamp(2.55rem,11vw,4.5rem)] font-normal tracking-tight text-heading leading-[1.05]">
-              The last mobile detailer <br className="hidden sm:inline" />
-              you'll ever <em className="italic font-serif font-light text-accent-hover">need.</em>
+            <h1 className="font-hero text-[clamp(1.95rem,7.3vw,3.5rem)] sm:text-[clamp(1.8rem,6.6vw,3.5rem)] xl:text-[clamp(3.5rem,4vw,4.5rem)] font-normal tracking-tight text-heading leading-[1.08]">
+              The last mobile detailer <br />
+              you'll ever <em className="italic font-hero font-light text-accent-hover">need.</em>
             </h1>
             {theme === 'light' && (
               <div className="w-20 h-[3px] rounded-full bg-gradient-to-r from-accent-vivid to-accent/20 -mt-4" />
@@ -148,11 +154,14 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {submitted && <p role="status" className="text-sm text-accent-text">Request received. Our team will contact you with pricing and availability.</p>}
+                {submitError && <p role="alert" className="text-sm text-amber-400">{submitError}</p>}
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                  <label htmlFor="hero-field-1" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                     NAME
                   </label>
-                  <input
+                  <input id="hero-field-1"
+                    autoComplete="name"
                     type="text"
                     required
                     value={formData.name}
@@ -163,10 +172,13 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                  <label htmlFor="hero-field-2" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                     PHONE
                   </label>
-                  <input
+                  <input id="hero-field-2"
+                    autoComplete="tel"
+                    minLength={7}
+                    maxLength={30}
                     type="tel"
                     required
                     value={formData.phone}
@@ -177,10 +189,10 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                  <label htmlFor="hero-field-3" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                     VEHICLE
                   </label>
-                  <input
+                  <input id="hero-field-3"
                     type="text"
                     value={formData.vehicleYearMakeModel}
                     onChange={(e) => setFormData({ ...formData, vehicleYearMakeModel: e.target.value })}
@@ -191,10 +203,10 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="hero-field-4" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       SERVICE
                     </label>
-                    <select
+                    <select id="hero-field-4"
                       value={formData.serviceId}
                       onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
                       className="w-full bg-input border border-border-strong text-text px-3 py-2.5 text-xs focus:outline-none focus:border-accent transition-colors rounded-xs"
@@ -207,10 +219,10 @@ export const Hero: React.FC<HeroProps> = ({ onFormSubmit, onOpenBooking }) => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="hero-field-5" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       LOCATION
                     </label>
-                    <select
+                    <select id="hero-field-5"
                       value={formData.locationMetro}
                       onChange={(e) => setFormData({ ...formData, locationMetro: e.target.value })}
                       className="w-full bg-input border border-border-strong text-text px-3 py-2.5 text-xs focus:outline-none focus:border-accent transition-colors rounded-xs"

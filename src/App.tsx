@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Stats } from './components/Stats';
@@ -28,19 +28,21 @@ export default function App() {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<string>('prestige');
   const [bookingInitialData, setBookingInitialData] = useState<BookingFormData | undefined>(undefined);
+  const [quotePrice, setQuotePrice] = useState<number | undefined>();
 
   const handleOpenBooking = (packageId?: string) => {
-    if (packageId) {
-      setSelectedPackageId(packageId);
-    }
+    setSelectedPackageId(packageId || 'prestige');
+    setBookingInitialData(undefined);
+    setQuotePrice(undefined);
     setBookingModalOpen(true);
   };
 
-  const handleFormSubmit = (data: BookingFormData) => {
-    setBookingInitialData(data);
-    setSelectedPackageId(data.serviceId || 'prestige');
+  useEffect(() => {
+    if (window.location.hash !== '#reserve') return;
+    const service = new URLSearchParams(window.location.search).get('service');
+    setSelectedPackageId(service && ['refresh', 'prestige', 'concours'].includes(service) ? service : 'prestige');
     setBookingModalOpen(true);
-  };
+  }, []);
 
   const handleQuoteCalculated = (partialData: Partial<BookingFormData>, price: number) => {
     if (partialData.serviceId) {
@@ -49,23 +51,25 @@ export default function App() {
     setBookingInitialData((prev) => ({
       name: prev?.name || '',
       phone: prev?.phone || '',
-      location: prev?.location || 'San Antonio',
-      vehicle: prev?.vehicle || '',
+      locationMetro: prev?.locationMetro || 'san-antonio',
+      vehicleYearMakeModel: prev?.vehicleYearMakeModel || '',
       serviceId: partialData.serviceId || selectedPackageId,
-      preferredTime: prev?.preferredTime || 'Morning (8AM - 12PM)',
+      preferredTime: prev?.preferredTime || '08:00 AM',
       notes: partialData.notes ? `${partialData.notes} | Est. Total: $${price}` : `Est. Total: $${price}`,
     }));
+    setQuotePrice(price);
     setBookingModalOpen(true);
   };
 
   return (
-    <div className="bg-surface text-text font-sans min-h-screen selection:bg-accent selection:text-accent-contrast transition-colors duration-300">
+    <div className="bg-surface text-text font-sans min-h-screen pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 selection:bg-accent selection:text-accent-contrast transition-colors duration-300">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-card focus:p-3">Skip to main content</a>
       {/* Header */}
       <Header onOpenBooking={handleOpenBooking} />
 
       {/* Main Sections */}
-      <main className="pb-20 md:pb-0">
-        <Hero onFormSubmit={handleFormSubmit} onOpenBooking={() => handleOpenBooking()} />
+      <main id="main-content" tabIndex={-1}>
+        <Hero onOpenBooking={() => handleOpenBooking()} />
         <ScrollReveal><Stats /></ScrollReveal>
         <ScrollReveal><VideoReels onOpenBooking={(pkgId) => handleOpenBooking(pkgId)} /></ScrollReveal>
         <ScrollReveal><BeforeAfter /></ScrollReveal>
@@ -86,6 +90,7 @@ export default function App() {
         onClose={() => setBookingModalOpen(false)}
         initialPackageId={selectedPackageId}
         initialData={bookingInitialData}
+        initialQuotePrice={quotePrice}
       />
 
       {/* Sticky Mobile CTA Bar */}

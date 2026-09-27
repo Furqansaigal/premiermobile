@@ -92,6 +92,11 @@ export const ServiceAreas: React.FC = () => {
           <form onSubmit={handleZipCheck} className="flex flex-col min-[420px]:flex-row items-stretch min-[420px]:items-center gap-2">
             <input
               type="text"
+              aria-label="ZIP code"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              pattern="[0-9]{5}"
+              required
               maxLength={5}
               placeholder="78258"
               value={zipCodeInput}
@@ -111,7 +116,7 @@ export const ServiceAreas: React.FC = () => {
           </form>
 
           {zipCheckResult.checked && (
-            <div className="pt-2">
+            <div className="pt-2" role="status">
               {zipCheckResult.inService ? (
                 <div className="flex items-center justify-center gap-2 text-emerald-400 text-xs font-sans">
                   <CheckCircle2 className="w-4 h-4" />

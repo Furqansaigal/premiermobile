@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useInView } from 'motion/react';
 import { Star, Instagram } from 'lucide-react';
 import { REVIEWS_DATA } from '../data/content';
 
 export const Reviews: React.FC = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref);
   const [filter, setFilter] = useState<'all' | 'Google' | 'Instagram'>('all');
 
   const filteredReviews = REVIEWS_DATA.filter(
@@ -74,11 +77,12 @@ export const Reviews: React.FC = () => {
         </div>
 
         {/* Horizontal review marquee */}
-        <div className="review-marquee -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8" aria-label="Customer reviews">
+        <div ref={ref} tabIndex={0} className="review-marquee -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8" aria-label="Customer reviews">
           {filteredReviews.length > 0 ? (
-            <div className="review-marquee__track">
+            <div className="review-marquee__track" style={{ animationPlayState: inView ? undefined : 'paused' }}>
               {marqueeReviews.map((rev, idx) => (
               <article
+                aria-hidden={idx >= filteredReviews.length || undefined}
                 key={`${rev.id}-${idx}`}
                 className="review-marquee__card bg-card border border-border p-5 sm:p-6 rounded-xs flex flex-col hover:border-accent/50 transition-colors shadow-xl shadow-elevated"
               >
@@ -115,6 +119,10 @@ export const Reviews: React.FC = () => {
                   <div className="flex items-center gap-3">
                     {rev.avatar && (
                       <img
+                        loading="lazy"
+                        decoding="async"
+                        width={36}
+                        height={36}
                         src={rev.avatar}
                         alt={rev.name}
                         className="w-9 h-9 rounded-full object-cover border border-border-strong"

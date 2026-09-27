@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BEFORE_AFTER_DATA } from '../data/content';
 import { MoveHorizontal, Pause, Play } from 'lucide-react';
+import { useInView } from 'motion/react';
 
 export const BeforeAfter: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -8,6 +9,7 @@ export const BeforeAfter: React.FC = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { amount: 0.1 });
   const autoDirection = useRef(1);
 
   const currentComparison = BEFORE_AFTER_DATA[activeTab];
@@ -24,7 +26,7 @@ export const BeforeAfter: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || !inView) return;
 
     let frameId = 0;
     let lastTime: number | undefined;
@@ -50,7 +52,7 @@ export const BeforeAfter: React.FC = () => {
 
     frameId = window.requestAnimationFrame(animate);
     return () => window.cancelAnimationFrame(frameId);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, inView]);
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -144,6 +146,8 @@ export const BeforeAfter: React.FC = () => {
           >
             {/* After Image (Full width background) */}
             <img
+              loading="lazy"
+              decoding="async"
               src={currentComparison.afterImage}
               alt={`After: ${currentComparison.title} — mobile auto detailing in San Antonio, TX by Premier Mobile Auto Detail`}
               referrerPolicy="no-referrer"
@@ -159,6 +163,8 @@ export const BeforeAfter: React.FC = () => {
               style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
             >
               <img
+                loading="lazy"
+                decoding="async"
                 src={currentComparison.beforeImage}
                 alt={`Before: ${currentComparison.title} — mobile auto detailing in San Antonio, TX by Premier Mobile Auto Detail`}
                 referrerPolicy="no-referrer"

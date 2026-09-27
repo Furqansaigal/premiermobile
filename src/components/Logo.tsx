@@ -23,6 +23,8 @@ export const Logo: React.FC<LogoProps> = ({
       <div className={`relative flex items-center justify-center overflow-hidden rounded-md border border-accent/30 bg-card p-1.5 ${iconOnlyClass} ${className}`}>
         <img
           src={logoSrc}
+          width={1010}
+          height={400}
           alt="Premier Mobile Auto Detail"
           className="w-full h-full object-contain"
         />
@@ -35,6 +37,8 @@ export const Logo: React.FC<LogoProps> = ({
       <div className={`flex flex-col items-center text-center ${className}`}>
         <img
           src={logoSrc}
+          width={1010}
+          height={400}
           alt="Premier Mobile Professional Auto Detail"
           className="h-16 sm:h-20 w-auto object-contain max-w-xs"
         />
@@ -47,6 +51,8 @@ export const Logo: React.FC<LogoProps> = ({
       <div className={`flex flex-col items-center text-center ${className}`}>
         <img
           src={logoSrc}
+          width={1010}
+          height={400}
           alt="Premier Mobile Professional Auto Detail"
           className="w-64 sm:w-80 md:w-96 h-auto object-contain"
         />
@@ -59,6 +65,8 @@ export const Logo: React.FC<LogoProps> = ({
     <div className={`flex items-center ${className}`}>
       <img
         src={logoSrc}
+        width={1010}
+        height={400}
         alt="Premier Mobile Professional Auto Detail"
         className="h-9 sm:h-11 w-auto object-contain"
       />

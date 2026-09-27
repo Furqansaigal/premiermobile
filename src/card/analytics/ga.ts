@@ -12,7 +12,7 @@ declare global {
 
 // Initialize GA4 script tag dynamically if valid measurement ID or placeholder
 export function initGA4() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !import.meta.env.PROD) return;
 
   if (!window.dataLayer) {
     window.dataLayer = window.dataLayer || [];

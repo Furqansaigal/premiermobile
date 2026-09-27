@@ -20,9 +20,22 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
         setIsScrolled(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        document.querySelector<HTMLButtonElement>('[aria-controls="mobile-navigation"]')?.focus();
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [mobileMenuOpen]);
 
   const scrollToSection = (id: string) => {
     const waitForMobileMenu = mobileMenuOpen;
@@ -147,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               id="mobile-navigation"
-              className="xl:hidden bg-surface/98 border-b border-border px-4 sm:px-6 py-5 sm:py-6 space-y-4"
+              className="xl:hidden max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain bg-surface/98 border-b border-border px-4 sm:px-6 py-5 sm:py-6 space-y-4"
             >
               <div className="flex flex-col space-y-4 text-sm font-sans uppercase tracking-widest text-text-secondary">
                 <a

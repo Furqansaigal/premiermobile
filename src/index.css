@@ -89,7 +89,7 @@ main section {
   --color-text: #e5e5e5;
   --color-text-secondary: #d4d4d4;
   --color-text-muted: #a3a3a3;
-  --color-text-faint: #737373;
+  --color-text-faint: #969696;
 
   --color-accent: #d8c3a5;           /* solid button / highlight fill */
   --color-accent-hover: #ece3d2;
@@ -111,8 +111,8 @@ main section {
   --color-heading: #171716;
   --color-text: #171716;
   --color-text-secondary: #58564c;
-  --color-text-muted: #86826f;
-  --color-text-faint: #a39d8e;
+  --color-text-muted: #706c5c;
+  --color-text-faint: #706c5c;
 
   --color-accent: #a77d3b;
   --color-accent-hover: #80591e;
@@ -125,8 +125,23 @@ main section {
   font-family: 'Playfair Display', Georgia, serif;
 }
 
+/* The hero uses a lighter, editorial display face for a more premium feel. */
+.font-hero {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
 .font-sans {
   font-family: 'Manrope', system-ui, sans-serif;
+}
+
+/* Allow form controls and long customer-entered values to shrink on narrow screens. */
+input, select, textarea { min-width: 0; max-width: 100%; }
+[role='dialog'] { overflow-wrap: anywhere; }
+[role='dialog'] button { flex-shrink: 0; }
+[role='dialog'] svg { flex-shrink: 0; }
+
+@media (pointer: coarse) {
+  button, a { min-height: 44px; }
 }
 
 /* Keep native form controls readable and consistent across both colour themes. */

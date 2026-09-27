@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2, Calendar, Clock, Car, Shield, Sparkles, Loader2 } from 'lucide-react';
 import { BookingFormData } from '../types';
@@ -10,6 +11,7 @@ interface BookingModalProps {
   onClose: () => void;
   initialPackageId?: string;
   initialData?: BookingFormData;
+  initialQuotePrice?: number;
 }
 
 export const BookingModal: React.FC<BookingModalProps> = ({
@@ -17,7 +19,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onClose,
   initialPackageId = 'prestige',
   initialData,
+  initialQuotePrice,
 }) => {
+  const dialogRef = useDialog(isOpen, onClose);
+  const submitting = useRef(false);
   const [selectedPackage, setSelectedPackage] = useState(initialPackageId);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +35,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     serviceId: initialPackageId,
     locationMetro: initialData?.locationMetro || 'san-antonio',
     preferredDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-    preferredTime: '09:00 AM',
+    preferredTime: '08:00 AM',
     notes: '',
   });
 
@@ -52,28 +57,41 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      setSelectedPackage(initialPackageId);
       setStep(1);
       setSubmitError('');
+      setFormData((prev) => ({ ...prev, serviceId: initialPackageId, notes: initialData?.notes || '' }));
     }
   }, [isOpen]);
 
   const activePkg = PACKAGES_DATA.find((p) => p.id === selectedPackage) ||
     SERVICES_DATA.find((s) => s.id === selectedPackage);
 
-  const calculatedPrice = activePkg
+  const basePrice = activePkg
     ? 'startingPrice' in activePkg
       ? activePkg.startingPrice
       : activePkg.price
     : 249;
+  const calculatedPrice = selectedPackage === initialPackageId && initialQuotePrice !== undefined ? initialQuotePrice : basePrice;
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting.current) return;
+    if (!formData.name.trim() || formData.phone.replace(/\D/g, '').length < 7) {
+      setSubmitError('Please enter your name and a valid phone number.');
+      return;
+    }
+    submitting.current = true;
     setIsSubmitting(true);
+    setSubmitError('');
     const didSend = await sendWeb3FormsNotification({
       ...formData,
+      packageId: selectedPackage,
+      vehicleMakeModel: formData.vehicleYearMakeModel,
       packageName: activePkg ? ('name' in activePkg ? activePkg.name : activePkg.title) : undefined,
       estimatedPrice: calculatedPrice,
     });
+    submitting.current = false;
     setIsSubmitting(false);
     if (didSend) {
       setStep(3);
@@ -86,7 +104,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -99,6 +117,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         {/* Modal Window */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          ref={dialogRef}
+          tabIndex={-1}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           role="dialog"
@@ -109,6 +129,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Close button */}
           <button
             onClick={onClose}
+            aria-label="Close estimate form"
             className="absolute top-5 right-5 text-text-muted hover:text-heading p-2 rounded-full cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -183,17 +204,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               {/* Package selector horizontal pills */}
               <div className="mb-5 sm:mb-6 space-y-2">
-                <label className="block text-[10px] uppercase tracking-widest text-text-muted font-sans">
+                <p className="block text-[10px] uppercase tracking-widest text-text-muted font-sans">
                   SELECT SERVICE TIER
-                </label>
+                </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {PACKAGES_DATA.map((pkg) => (
                     <button
                       key={pkg.id}
                       type="button"
+                      aria-pressed={selectedPackage === pkg.id}
                       onClick={() => {
                         setSelectedPackage(pkg.id);
-                        setFormData((p) => ({ ...p, serviceId: pkg.id }));
+                        setFormData((p) => ({ ...p, serviceId: pkg.id, notes: pkg.id === initialPackageId ? initialData?.notes || '' : '' }));
                       }}
                       className={`p-2.5 text-left border rounded-xs transition-all cursor-pointer ${
                         selectedPackage === pkg.id
@@ -213,10 +235,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <form onSubmit={handleSubmitBooking} className="space-y-3.5 sm:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-1" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       FULL NAME *
                     </label>
-                    <input
+                    <input id="bookingmodal-field-1"
+                      autoComplete="name"
                       type="text"
                       required
                       value={formData.name}
@@ -227,10 +250,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-2" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       CELL PHONE *
                     </label>
-                    <input
+                    <input id="bookingmodal-field-2"
+                      autoComplete="tel"
+                      minLength={7}
+                      maxLength={30}
                       type="tel"
                       required
                       value={formData.phone}
@@ -243,10 +269,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-3" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       VEHICLE YEAR / MAKE / MODEL
                     </label>
-                    <input
+                    <input id="bookingmodal-field-3"
                       type="text"
                       value={formData.vehicleYearMakeModel}
                       onChange={(e) => setFormData({ ...formData, vehicleYearMakeModel: e.target.value })}
@@ -256,10 +282,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-4" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       SERVICE METRO AREA
                     </label>
-                    <select
+                    <select id="bookingmodal-field-4"
                       value={formData.locationMetro}
                       onChange={(e) => setFormData({ ...formData, locationMetro: e.target.value })}
                       className="w-full bg-input border border-border-strong text-text px-3 py-2.5 text-xs focus:outline-none focus:border-accent rounded-xs"
@@ -274,11 +300,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-5" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       PREFERRED SERVICE DATE
                     </label>
-                    <input
+                    <input id="bookingmodal-field-5"
                       type="date"
+                      min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
                       value={formData.preferredDate}
                       onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
                       className="w-full bg-input border border-border-strong text-heading px-3 py-2 text-xs focus:outline-none focus:border-accent rounded-xs"
@@ -286,10 +313,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
+                    <label htmlFor="bookingmodal-field-6" className="block text-[10px] uppercase tracking-widest text-text-muted mb-1 font-sans">
                       PREFERRED ARRIVAL WINDOW
                     </label>
-                    <select
+                    <select id="bookingmodal-field-6"
                       value={formData.preferredTime}
                       onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
                       className="w-full bg-input border border-border-strong text-text px-3 py-2.5 text-xs focus:outline-none focus:border-accent rounded-xs"
@@ -311,7 +338,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   </p>
                 )}
 
-                <div className="pt-2 flex items-center justify-between border-t border-border-subtle">
+                <div className="pt-2 flex flex-col min-[420px]:flex-row items-stretch min-[420px]:items-center justify-between gap-3 border-t border-border-subtle">
                   <div>
                     <span className="text-[10px] uppercase text-text-muted block font-sans">ESTIMATED PRICING</span>
                     <span className="font-serif text-2xl text-accent-vivid">${calculatedPrice}+</span>

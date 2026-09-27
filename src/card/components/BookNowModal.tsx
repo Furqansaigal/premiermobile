@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useDialog } from '../../hooks/useDialog';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Calendar, CheckCircle2, ShieldCheck, Sparkles, Clock, ArrowRight, ExternalLink, Car } from 'lucide-react';
 import { BRAND_CONFIG, SERVICES } from '../data/config';
@@ -28,6 +29,7 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const submitting = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,7 +60,12 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
   const handleQuickRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerPhone.trim()) return;
+    if (submitting.current) return;
+    if (!customerName.trim() || customerPhone.replace(/\D/g, '').length < 7) {
+      setSubmitError('Please enter your name and a valid phone number.');
+      return;
+    }
+    submitting.current = true;
 
     if (onTrackAction) onTrackAction('submitted_fast_booking_request');
     setIsSubmitting(true);
@@ -77,6 +84,7 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
       notes: 'Submitted via /card Quick Request form',
     });
 
+    submitting.current = false;
     setIsSubmitting(false);
     if (!didSend) {
       setSubmitError('We could not send your request. Please try again or text us directly.');
@@ -85,20 +93,14 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
     setIsSubmitted(true);
 
-    // Also prepare SMS fallback option so the customer has a direct line too
-    setTimeout(() => {
-      const smsBody = encodeURIComponent(
-        `Hi Premier Mobile! I would like to book the ${activePkg.name} for my ${vehicleLabels[vehicleType]} (Est. $${calculatedPrice}).\nName: ${customerName}\nPhone: ${customerPhone}\nLocation/Zip: ${customerZip}\nPreferred Time: ${preferredDay}`
-      );
-      window.location.href = `sms:${BRAND_CONFIG.phoneRaw}?&body=${smsBody}`;
-    }, 1200);
   };
 
+  const dialogRef = useDialog(isOpen, onClose);
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -110,11 +112,16 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
         {/* Content Card */}
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Request a booking"
+          tabIndex={-1}
           initial={{ y: '100%', opacity: 0.5 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-          className="relative w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[92vh] overflow-y-auto"
+          className="relative w-full max-w-lg bg-card border border-border rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl shadow-elevated-lg text-heading z-10 max-h-[92dvh] overflow-y-auto overscroll-contain"
         >
           {/* Header */}
             <div className="flex items-start justify-between gap-3 border-b border-border pb-4 mb-4">
@@ -171,9 +178,9 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
               {/* Step 1: Select Service */}
               <div>
-                <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">
                   1. Select Detailing Service
-                </label>
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {SERVICES.map((pkg) => {
                     const isSelected = selectedService === pkg.id;
@@ -181,6 +188,7 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
                       <button
                         key={pkg.id}
                         type="button"
+                        aria-pressed={isSelected}
                         onClick={() => setSelectedService(pkg.id)}
                         className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
                           isSelected
@@ -205,9 +213,9 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
               {/* Step 2: Vehicle Size */}
               <div>
-                <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider block mb-2">
                   2. Vehicle Type
-                </label>
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'sedan', label: 'Sedan / Coupe' },
@@ -218,6 +226,7 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
                     <button
                       key={v.id}
                       type="button"
+                      aria-pressed={vehicleType === v.id}
                       onClick={() => setVehicleType(v.id as any)}
                       className={`p-2.5 rounded-xl border text-center text-xs font-medium transition-all cursor-pointer ${
                         vehicleType === v.id
@@ -234,8 +243,9 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
               {/* Fast Form */}
               <form onSubmit={handleQuickRequestSubmit} className="space-y-3 pt-2">
                 <div>
-                  <label className="text-xs text-text-secondary block mb-1">Your Name</label>
-                  <input
+                  <label htmlFor="booknowmodal-field-1" className="text-xs text-text-secondary block mb-1">Your Name</label>
+                  <input id="booknowmodal-field-1"
+                    autoComplete="name"
                     type="text"
                     required
                     placeholder="e.g. Michael Smith"
@@ -247,8 +257,11 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs text-text-secondary block mb-1">Phone Number</label>
-                    <input
+                    <label htmlFor="booknowmodal-field-2" className="text-xs text-text-secondary block mb-1">Phone Number</label>
+                    <input id="booknowmodal-field-2"
+                      autoComplete="tel"
+                      minLength={7}
+                      maxLength={30}
                       type="tel"
                       required
                       placeholder="(210) 000-0000"
@@ -258,8 +271,8 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-text-secondary block mb-1">City / Zip Code</label>
-                    <input
+                    <label htmlFor="booknowmodal-field-3" className="text-xs text-text-secondary block mb-1">City / Zip Code</label>
+                    <input id="booknowmodal-field-3"
                       type="text"
                       placeholder="e.g. San Antonio / 78209"
                       value={customerZip}
@@ -299,8 +312,9 @@ export const BookNowModal: React.FC<BookNowModalProps> = ({
               </div>
               <h4 className="text-xl font-bold text-heading">Booking Request Sent!</h4>
               <p className="text-sm text-text-secondary max-w-sm mx-auto">
-                Your request has been received by our team. We're also opening a text message so you can reach us directly — feel free to send it, or we'll follow up shortly either way!
+                Your request has been received by our team. We'll follow up shortly. You can also text us directly below.
               </p>
+              <a href={`sms:${BRAND_CONFIG.phoneRaw}?&body=${encodeURIComponent(`Hi Premier Mobile! I submitted a request for ${activePkg.name}. Name: ${customerName}`)}`} className="inline-flex items-center justify-center rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-contrast">Text us directly</a>
               <button
                 onClick={onClose}
                 className="mt-4 px-6 py-2.5 bg-input text-heading rounded-xl text-sm font-semibold hover:opacity-80"

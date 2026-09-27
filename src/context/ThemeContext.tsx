@@ -14,8 +14,10 @@ const STORAGE_KEY = 'pmad-theme';
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark') return stored;
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch { /* Storage can be unavailable in private or restricted browsers. */ }
   // No stored preference yet: the site's original, default look is dark.
   return 'dark';
 }
@@ -30,7 +32,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       root.classList.remove('light');
     }
-    window.localStorage.setItem(STORAGE_KEY, theme);
+    try { window.localStorage.setItem(STORAGE_KEY, theme); } catch { /* Keep theme usable without storage. */ }
   }, [theme]);
 
   const setTheme = (next: Theme) => setThemeState(next);
